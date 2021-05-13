@@ -1,0 +1,22 @@
+{
+    "name": "shyjs",
+    "version": "2.0.0",
+    "description": "a Microservice framework on nodejs.",
+    "main": "./shyjs/index.js",
+    "scripts": {},
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/amdog/shyjs"
+    },
+    "keywords": [
+        "microservice",
+        "simple http",
+        "convenient"
+    ],
+    "author": "amdog",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/amdog/shyjs/issues"
+    },
+    "homepage": "https://github.com/amdog/shyjs#readme"
+}

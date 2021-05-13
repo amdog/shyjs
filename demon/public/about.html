@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <title>about</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="jumbotron">
+            <p>{{name}} 登录成功！</p><a href="/exit">退出</a>
+        </div>
+        <table class="table table-striped col-lg-8">
+            <caption>商品信息</caption>
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>商品</th>
+                    <th>城市</th>
+                    <th>邮编</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{each goods}}
+                <tr>
+                    <td>{{$value.id}} </td>
+                    <td>{{$value.goods}} </td>
+                    <td>{{$value.city}} </td>
+                    <td>{{$value.postal}} </td>
+                </tr>
+                {{/each}}
+                <tr>
+                    <form role="form" action="/add" method="post">
+                        <td><input type="text" class="form-control" placeholder="商品"></td>
+                        <td><input type="text" class="form-control" placeholder="城市"></td>
+                        <td><input type="text" class="form-control" placeholder="邮编"></td>
+                        <td><input type="button" class=" form-control btn-info" value="add"></td>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+<script>
+    $('input')[3].addEventListener('click', () => {
+        let arr = [$('input')[0].value, $('input')[1].value, $('input')[2].value]
+        $.get(
+            '/add', {
+                goods: arr[0],
+                city: arr[1],
+                postal: arr[2],
+            }
+        ).then(() => {
+            window.location.reload()
+        })
+    })
+</script>
+
+</html>
