@@ -3,8 +3,11 @@
 - 安装
 
 ```bash
-npm install shyjs --save
+npm install shyjs@2.0.1 --save
 ```
+- 目前是第二版本 与第一版相比控制器参数第一个由 请求响应操作对象 => 请求的url参数解析 第二参数为调用beforeNext 回调函数参数
+- 原先的 请求响应操作对象< vector \> 绑定到了原型 this 上
+
 
 ## 配置项(Config)
 
@@ -21,7 +24,7 @@ shy.deploy({
     password: '',
     database: 'user',
   },
-  //header:{} 自定义所有请求头
+  header:{} //自定义所有请求头
   redis: {}, //redis配置
   session: {
     //session配置
@@ -31,7 +34,7 @@ shy.deploy({
     secure: true,
     httpOnly: true,
     store: {
-      //cookie的保存方法 default保存在内存中
+      //session的保存方法 默认保存在内存中
       set() {
         console.log('set')
       },
@@ -62,7 +65,7 @@ shy.Controller = {
     return 'holle!'
   },
 }
-shy.Route.get('/say', shy.Controller.say) //浏览器输出 {data:'holle!'}
+shy.Route.get('/say', shy.Controller.say) //浏览器输出 holle!
 ```
 
 ## 控制器(Controller)
@@ -75,16 +78,21 @@ shy.Route.get('/say', shy.Controller.say) //浏览器输出 {data:'holle!'}
     constructor() {
 
     }
-    say(vector) {
-        console.log(vector)
+    say(query) {
+        console.log(query)
         return 'holle!'
     }
 } }
 shy.Controller = new C()
 shy.Route.get('/say', shy.Controller.say)
 ```
- 每一个控制器方法的第一个参数为请求和响应对象的摘要
-- vector列表 
+ 每一个控制器方法的第一个参数为请求的url解析 < object \>
+ 
+ 例：url=/login?name=zhangsan 为 {name:'zhangsan'}
+
+ 在控制器原型上绑定 请求和响应对象的摘要
+
+- this 列表 
   | key |  |
   | ---- | ---- |
   | res | 原始res对象 |
@@ -99,7 +107,7 @@ shy.Route.get('/say', shy.Controller.say)
   | saveAsFile | 将buffer保存为文件(\<string :path\>,\<buffer\>) |
 
 ## cookie
-开发者可以通过 vector.seCookie(\<string :key\>,\<string :value\>,[options])
+开发者可以通过 vector.setCookie(\<string :key\>,\<string :value\>,[options])
 
 - options说明
 
@@ -116,7 +124,7 @@ shy.Route.get('/say', shy.Controller.say)
 有关于session的配置 已经写在前面
 有关vector.session 的解释
 ```javascript
-  session: {
+   session: {
       // 此处的set 和 get在config.session.store 
       //使用config.session.store中配置set get方法 否则为默认方法 
     set: [Function: set], 
@@ -124,15 +132,22 @@ shy.Route.get('/say', shy.Controller.say)
     del: [Function: del], 
     sig_id: //客户端存活的cookie 即session id ,
     value: // 通过sesion id拿到的key 即get(sig_id)返回的结果
-  },
+  } 
+//例 设置session
+this.session.set('name','zhangsan')
+//获取
+this.session.value
+// 删除session
+this.session.del()
 ```
 另外，在config 配置中 session.store 必须包含 set get expire 方法
 如果使用redis 则可以
 
 ```javascript
-shy.deploy({
-    config.session.store=new shy.Plug('redis')
-})
+
+config.session.store=new shy.Plug('redis')
+shy.deploy(config)
+
 ```
 
 ## 日志(Log)
@@ -140,7 +155,7 @@ shy.deploy({
 
 ## 插件(Plug)
 支持mysql、redis、art-template插件 
-例如mysql 插件使用如下
+例如mysql art-template redis 插件使用如下
 ```javascript
 
 class C extends shy.Plug {
@@ -150,9 +165,14 @@ class C extends shy.Plug {
     async say(vector) {
         console.log(await this.mysql.select('info', { name: 'jack' }))
         console.log(await this.mysql.update('info', { name: 'jack' }, { password: 9 }))
-        console.log(await this.mysql.insert('info', ['marry', 2, 'marry@qq.com']))
-        console.log(await this.mysql.delete('info', { name: 'marry' }))    
-        }
+        console.log(await this.mysql.insert('info', {name:'marry', goods:2, mail:'marry@qq.com'}))
+        console.log(await this.mysql.delete('info', { name: 'marry' }))
+        this.redis.set('am','dog')
+        this.redis.get('am')
+        this.redis.expire(1000*60) //保存六十秒 
+        //art-template
+       return  this.art.template('./public/say.html',{name:'marry'}).toString()   
+    }
 }
 shy.Controller = new C()
 shy.Route.get('/say', shy.Controller.say)
@@ -160,15 +180,9 @@ shy.Route.get('/say', shy.Controller.say)
 ```
 - beforeNext钩子
 在进入controller之前 如果存在shy.beforeNext 则先执行beforeNext :(\<object :vector\>,callback) callback参数作为控制器的第二个参数。
-！！！如果使用beforeNext 必须调用calback
-
-
-create table tb_goods(id int auto_increment primary key,
-goods char(60),
-city char(40),
-postal char(40),
-)
+！！！如果使用beforeNext 必须调用callback
 
 
 
-
+## 开发者模式
+ - 模式 <cmd>node index.js --dev</cmd>:浏览器同步输出报错信息保存在message字段中 格式为html

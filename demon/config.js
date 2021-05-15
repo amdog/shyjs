@@ -7,10 +7,15 @@ module.exports = {
         password: '123',
         database: 'customer'
     },
+    headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type,Content-Length,Authorization,Origin,Accept,X-Requested-With',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS.PUT,PATCH,DELETE'
+    },
     redis: {}, //redis配置
     session: { //session配置
         cookieKey: 'sig_id', //保存session id的键名
-        maxAge: 1000 * 60 * 60 * 24, //session 存活时间
+        maxAge: 1000, //session 存活时间
         path: '/', //cookie生效路径
         secure: true,
         httpOnly: true,

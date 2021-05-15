@@ -22,10 +22,11 @@ function deploy(conf) {
     global.config = config
     storeClock()
     http.createServer((req, res) => {
+        setHeader(res)
         if (req.method == 'OPTIONS') {
-            setHeader(res)
             res.end()
         } else {
+
             main(req, res)
         }
     }).listen(config.port)
@@ -33,10 +34,10 @@ function deploy(conf) {
 }
 
 function setHeader(res) {
-    if (!config.headers && !res.writableEnded) {
-        if (isObject(config.headers)) {
-            Object.keys(config.headers).forEach(v => {
-                res.setHeader(v, config.headers[v])
+    if (global.config.headers && !res.writableEnded) {
+        if (isObject(global.config.headers)) {
+            Object.keys(global.config.headers).forEach(v => {
+                res.setHeader(v, global.config.headers[v])
             })
         }
     }
@@ -53,6 +54,7 @@ function redirect(res, url) {
 module.exports = { deploy, setHeader }
 
 async function extractDigest(req, res) {
+
     let hinge = {
         url: Object.assign({ origin: req.url }, path.parse(req.url)),
         method: req.method,
@@ -69,6 +71,7 @@ async function extractDigest(req, res) {
             setCookie.apply(res, args)
         }
     }
+
     hinge.session = await parseSession(hinge)
     hinge.data = await parseBody(req)
     return hinge

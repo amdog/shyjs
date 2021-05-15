@@ -10,6 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "mysql": "^2.18.1",
-    "shyjs": "^1.1.1"
+    "shyjs": "^2.0.0"
   }
 }

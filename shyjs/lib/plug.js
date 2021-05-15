@@ -1,7 +1,12 @@
 class Redis {
     constructor(R) {
-        this.R = R.createClient(global.config.redis);
-
+        let conf
+        if (global.config && global.config.redis) {
+            conf = global.config.redis
+        } else {
+            conf = {}
+        }
+        this.R = R.createClient(conf);
     }
     expire(...args) {
         this.R.expire.apply(this.R, args)

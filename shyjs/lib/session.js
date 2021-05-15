@@ -23,6 +23,7 @@ async function parseSession(hinge) {
                 hash.update(key)
                 let k = hash.digest('hex')
                 hinge.setCookie(global.config.session.cookieKey, k, global.config.session)
+                hinge.res.setHeader('Authorization', k)
                 if (global.config.session.store) {
                     global.config.session.store.set(k, key)
                     global.config.session.store.expire(k, global.config.session.maxAge)
@@ -58,7 +59,15 @@ async function parseSession(hinge) {
             }
         }
         let key = global.config.session.cookieKey
-        if (hinge.cookie[key]) {
+
+
+        if (!hinge.cookie[key]) {
+            key = hinge.headers['authorization']
+            if (key) {
+                session[key] = key
+                session.value = await session.get(key)
+            }
+        } else {
             session[key] = hinge.cookie[key]
             session.value = await session.get(session[key])
         }
