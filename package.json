@@ -1,8 +1,8 @@
 {
     "name": "shyjs",
-    "version": "2.1.1",
+    "version": "2.7.4",
     "description": "a Microservice framework on nodejs.",
-    "main": "./shyjs/index.js",
+    "main": "./main.js",
     "scripts": {},
     "repository": {
         "type": "git",
@@ -18,5 +18,6 @@
     "bugs": {
         "url": "https://github.com/amdog/shyjs/issues"
     },
-    "homepage": "https://github.com/amdog/shyjs#readme"
+    "homepage": "https://github.com/amdog/shyjs#readme",
+    "dependencies": {}
 }

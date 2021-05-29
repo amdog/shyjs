@@ -16,6 +16,8 @@
         <div class="jumbotron">
             <p>{{name}} 登录成功！</p><a href="/exit">退出</a>
         </div>
+        <a href="/about.html?limit=10">只查询十条记录</a>
+        <a href="/about.html">查询全部记录</a>
         <table class="table table-striped col-lg-8">
             <caption>商品信息</caption>
             <thead>
@@ -24,6 +26,7 @@
                     <th>商品</th>
                     <th>城市</th>
                     <th>邮编</th>
+                    <th>操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,9 +36,10 @@
                     <td>{{$value.goods}} </td>
                     <td>{{$value.city}} </td>
                     <td>{{$value.postal}} </td>
+                    <td><a href="/del?id={{$value.id}}">删除</a></td>
                 </tr>
                 {{/each}}
-                <tr>
+                <tr id="col">
                     <form role="form" action="/add" method="post">
                         <td><input type="text" class="form-control" placeholder="商品"></td>
                         <td><input type="text" class="form-control" placeholder="城市"></td>
@@ -46,18 +50,17 @@
             </tbody>
         </table>
     </div>
-
 </body>
 <script>
     $('input')[3].addEventListener('click', () => {
         let arr = [$('input')[0].value, $('input')[1].value, $('input')[2].value]
-        $.get(
+        $.post(
             '/add', {
                 goods: arr[0],
                 city: arr[1],
                 postal: arr[2],
             }
-        ).then(() => {
+        ).then((d) => {
             window.location.reload()
         })
     })

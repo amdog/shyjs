@@ -4,9 +4,9 @@
  * https://github.com/amdog/shy.js | Released under MIT license
  */
 const entry = Object.create(null)
-const { route } = require('./lib/route.js')
-const { deploy } = require('./service/service.js')
-const { Plug } = require('./lib/plug')
+const { route } = require('./service/route.js')
+const { deploy } = require('./service/http.js')
+const { Plug } = require('./plug/index.js')
 
 entry.beforeNext = (next) => {
     next()
@@ -14,7 +14,7 @@ entry.beforeNext = (next) => {
 entry.Route = route
 entry.Plug = Plug
 entry.deploy = deploy
-entry.Controller
+entry.Controller = {}
 global.shy = entry
 
 module.exports = entry

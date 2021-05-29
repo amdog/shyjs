@@ -1,3 +1,6 @@
+const { isFileInstatic, isObject } = require("../lib/kit.js");
+const path = require('path')
+
 class Redis {
     constructor(R) {
         let conf
@@ -96,6 +99,8 @@ class Mysql {
         })
     }
 }
+
+
 class ArtTemplate {
     constructor(A) {
         this.A = A
@@ -120,6 +125,18 @@ class Plug {
         args.forEach(v => {
             this[v.split('-')[0]] = new PlugList[v](loadLib(v))
         })
+        this.afterContoller = function(data, hinge, cb) {
+            let url = new URL('http://localhost' + hinge.url.origin).pathname
+            let filePath
+            if (global.config.static) {
+                filePath = isFileInstatic(url, global.config.static)
+            }
+            if (filePath && isObject(data) && this.art) {
+                cb(this.art.template(path.join(module.parent.parent.path, filePath), data).toString())
+            } else {
+                cb(data)
+            }
+        }
     }
 }
 module.exports = { Plug }
@@ -128,6 +145,6 @@ function loadLib(name) {
     try {
         return require(name)
     } catch (e) {
-        console.log('\x1B[33m%s\x1b[0m', `\n npm i ${name}- s`);
+        console.log('\x1B[33m%s\x1b[0m', `\n npm i ${name} -s`);
     }
 }
