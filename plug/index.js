@@ -3,13 +3,11 @@ const path = require('path')
 
 class Redis {
     constructor(R) {
-        let conf
+        this.conf = {}
         if (global.config && global.config.redis) {
-            conf = global.config.redis
-        } else {
-            conf = {}
+            this.conf = global.config.redis
         }
-        this.R = R.createClient(conf);
+        this.R = R.createClient(this.conf)
     }
     expire(...args) {
         this.R.expire.apply(this.R, args)
@@ -23,7 +21,6 @@ class Redis {
     }
     set(...args) {
         this.R.set.apply(this.R, args)
-        return true
     }
     del(sig_id) {
         this.R.del(sig_id)
@@ -126,7 +123,7 @@ class Plug {
             this[v.split('-')[0]] = new PlugList[v](loadLib(v))
         })
         this.afterContoller = function(data, hinge, cb) {
-            let url = new URL('http://localhost' + hinge.url.origin).pathname
+            let url = new URL('http://localhost' + hinge.url).pathname
             let filePath
             if (global.config.static) {
                 filePath = isFileInstatic(url, global.config.static)

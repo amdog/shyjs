@@ -1,6 +1,6 @@
 {
     "name": "shyjs",
-    "version": "2.7.4",
+    "version": "2.8.4",
     "description": "a Microservice framework on nodejs.",
     "main": "./main.js",
     "scripts": {},

@@ -5,17 +5,12 @@ const { parseBody } = require('./parse-body.js')
 const { parseSession } = require('../../lib/session.js')
 
 
-function redirect(res, url) {
-    res.statusCode = 302
-    if (!res.writableEnded) {
-        res.setHeader('Location', url)
-        res.end()
-    }
-}
+
 
 async function extractDigest(req, res) {
     let hinge = {
-        url: Object.assign({ origin: req.url }, path.parse(req.url)),
+        url: req.url,
+        path: path.parse(req.url),
         method: req.method,
         req: req,
         res: res,
@@ -23,16 +18,22 @@ async function extractDigest(req, res) {
         headers: req.headers,
         cookie: parseCookie(req.headers.cookie),
         session: {},
+        resHeaders: {},
+        resStatusCode: 200,
+        setHeader(key, value) {
+            this.resHeaders[key] = value
+        },
         redirect(url) {
-            redirect(res, url)
+            this.resStatusCode = 302
+            this.resHeaders['Location'] = url
         },
         setCookie(...args) {
-            setCookie.apply(res, args)
+            this.resHeaders['Set-Cookie'] = setCookie.apply(null, args)
         }
     }
+
     hinge.session = await parseSession(hinge)
     hinge.data = await parseBody(req)
     return hinge
 }
-
 module.exports = { extractDigest }

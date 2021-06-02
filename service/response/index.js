@@ -1,6 +1,8 @@
-const { route_map } = require('../route.js')
-const { isObject, isString, objToStr, isFileInstatic, exten_name_list } = require('../../lib/kit.js')
+const { RouteMap } = require('../route.js')
+const { isObject, isString, objToStr, isFileInstatic, extenList, setHeader } = require('../../lib/kit.js')
 const { toCallController } = require('./controller.js')
+
+
 const fs = require('fs')
 const path = require('path')
 
@@ -67,16 +69,20 @@ let createTemplate = {
 
 
 function send(hinge, res) {
-    let url = hinge.url.origin
-    let route_map_keys = Object.keys(route_map)
+    let url = hinge.url
+    let routeMapKeys = Object.keys(RouteMap)
     let key_ = new URL('http://localhost' + url).pathname.replace('/', '_')
     let key = hinge.method.toLocaleLowerCase() + key_
     let config = global.config
 
-    if (route_map_keys.includes(key)) {
-        toCallController(route_map[key], hinge)
-            .then(([result, mes]) => {
-                if (!hinge.res.writableEnded) {
+    if (routeMapKeys.includes(key)) {
+        toCallController(RouteMap[key], hinge)
+            .then(async([result, mes, rubish]) => {
+                setHeader(res, rubish.resHeaders)
+                if (rubish.resStatusCode == 302 || rubish.resStatusCode == 301) {
+                    res.statusCode = rubish.resStatusCode
+                    res.end()
+                } else {
                     let template = objToStr(createTemplate[mes](result))
                     if (mes == 'success' && isObject(result)) {
                         res.setHeader('Content-Type', 'application/json')
@@ -91,22 +97,20 @@ function send(hinge, res) {
                         res.end(result)
                     }
                     if (!isString(result) && !isObject(result)) {
-                        res.removeHeader('Content-Type')
                         res.setHeader('Content-Type', 'text/html')
                         res.end(objToStr(createTemplate['formatWarning'](result)))
                     }
                 }
-
             })
     } else {
-        let url = hinge.url.origin
+        let url = hinge.url
         if (config.static) {
             let filePath = isFileInstatic(url, config.static)
             if (filePath) {
                 fs.readFile(filePath, (e, d) => {
                     let exten = path.extname(filePath)
-                    if (exten_name_list[exten]) {
-                        res.setHeader('Content-Type', exten_name_list[exten])
+                    if (extenList[exten]) {
+                        res.setHeader('Content-Type', extenList[exten])
                     } else {
                         res.setHeader('Content-Type', 'application/octet-stream')
                     }

@@ -1,5 +1,5 @@
 const { printInfo } = require('../lib/console.js')
-const { isObject } = require('../lib/kit.js')
+const { setHeader } = require('../lib/kit.js')
 const { send } = require('./response/index.js')
 const http = require('http')
 const { storeClock } = require('../lib/session.js')
@@ -18,9 +18,11 @@ function deploy(conf) {
     if (!conf) { conf = {} }
     let config = defaultConf(conf)
     global.config = config
-    storeClock()
+    if (config.session && !config.session.store) {
+        storeClock()
+    }
     http.createServer((req, res) => {
-        setHeader(res)
+        setHeader(res, config.headers)
         if (req.method == 'OPTIONS') {
             res.end()
         } else {
@@ -30,15 +32,6 @@ function deploy(conf) {
     printInfo(config)
 }
 
-function setHeader(res) {
-    let headers = global.config.headers
-    if (headers && !res.writableEnded) {
-        if (isObject(headers)) {
-            Object.keys(headers).forEach(v => {
-                res.setHeader(v, headers[v])
-            })
-        }
-    }
-}
 
-module.exports = { deploy, setHeader }
+
+module.exports = { deploy }

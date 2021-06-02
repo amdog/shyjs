@@ -13,13 +13,13 @@ let route = {
     }
 }
 
-let route_map = {}
+let RouteMap = {}
 
 function buildRouteKey(method, args) {
-    return route_map[method + args[0].replace('/', '_')] = args[1]
+    return RouteMap[method + args[0].replace('/', '_')] = args[1]
 }
 
 module.exports = {
-    route_map,
+    RouteMap,
     route
 }
