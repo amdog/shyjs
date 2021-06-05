@@ -1,6 +1,3 @@
-const { isFileInstatic, isObject } = require("../lib/kit.js");
-const path = require('path')
-
 class Redis {
     constructor(R) {
         this.conf = {}
@@ -9,8 +6,8 @@ class Redis {
         }
         this.R = R.createClient(this.conf)
     }
-    expire(...args) {
-        this.R.expire.apply(this.R, args)
+    expire(key, age) {
+        this.R.expire(key, age)
     }
     get(key) {
         return new Promise((res) => {
@@ -20,10 +17,15 @@ class Redis {
         })
     }
     set(...args) {
-        this.R.set.apply(this.R, args)
+        this.R.set(args[0], args[1], (e) => {
+            if (e) {
+                console.log(e);
+            }
+        })
     }
-    del(sig_id) {
-        this.R.del(sig_id)
+
+    del(key) {
+        this.R.del(key, (e) => {})
     }
 }
 class Mysql {
@@ -46,12 +48,47 @@ class Mysql {
             }
         }
     }
+
+    async existTb(name) {
+        if (await this.query(`show tables like '${name}'`)) {
+            return true
+        }
+        return false
+    }
+
+    async createTb(name, desc) {
+        if (await this.existTb(name)) {
+            return new Error(' the table exist!')
+        } else {
+            let sql = `create table ${name}(`
+            for (let key in desc) {
+                sql += `${key} ${desc[key]},`
+            }
+            return this.query(`${sql.substring(0, sql.length - 1)}) ENGINE=InnoDB DEFAULT CHARSET=utf8;`)
+        }
+    }
+
+    async dropTb(name) {
+        if (await this.existTb(name)) {
+            return this.query(`drop table ${name}`)
+        }
+    }
+
     async update(table, condition1, condition2) {
         let key1 = Object.keys(condition1)[0]
         let value1 = condition1[key1]
+
         let key2 = Object.keys(condition2)[0]
         let value2 = condition2[key2]
-        let r = await this.query(`update ${table} set ${key1}='${value1}'  where ${key2}='${value2}'`)
+
+        let key3 = Object.keys(condition2)[1]
+        let value3 = condition2[key3]
+        let r
+        if (key3) {
+            r = await this.query(`update ${table} set ${key1}='${value1}'  where ${key2}='${value2}' and ${key3}='${value3}'`)
+        } else {
+            r = await this.query(`update ${table} set ${key1}='${value1}'  where ${key2}='${value2}'`)
+        }
         return !!r
     }
     async delete(table, condition) {
@@ -59,6 +96,9 @@ class Mysql {
         let value = condition[key]
         let r = await this.query(`delete from ${table}  where ${key}='${value}'`)
         return !!r
+    }
+    async descTb(name) {
+        return this.query(`desc ${name}`)
     }
     async insert(table, condition) {
         let values = ''
@@ -90,7 +130,7 @@ class Mysql {
                 if (r && !r[0]) {
                     rs(null)
                 } else {
-                    rs(r)
+                    rs(Array.from(r))
                 }
             })
         })
@@ -122,18 +162,6 @@ class Plug {
         args.forEach(v => {
             this[v.split('-')[0]] = new PlugList[v](loadLib(v))
         })
-        this.afterContoller = function(data, hinge, cb) {
-            let url = new URL('http://localhost' + hinge.url).pathname
-            let filePath
-            if (global.config.static) {
-                filePath = isFileInstatic(url, global.config.static)
-            }
-            if (filePath && isObject(data) && this.art) {
-                cb(this.art.template(path.join(module.parent.parent.path, filePath), data).toString())
-            } else {
-                cb(data)
-            }
-        }
     }
 }
 module.exports = { Plug }

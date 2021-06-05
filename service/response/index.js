@@ -78,29 +78,31 @@ function send(hinge, res) {
     if (routeMapKeys.includes(key)) {
         toCallController(RouteMap[key], hinge)
             .then(async([result, mes, rubish]) => {
-                setHeader(res, rubish.resHeaders)
-                if (rubish.resStatusCode == 302 || rubish.resStatusCode == 301) {
-                    res.statusCode = rubish.resStatusCode
-                    res.end()
-                } else {
-                    let template = objToStr(createTemplate[mes](result))
-                    if (mes == 'success' && isObject(result)) {
-                        res.setHeader('Content-Type', 'application/json')
-                        res.end(template)
+                try {
+                    setHeader(res, rubish.resHeaders)
+                    if (rubish.resStatusCode == 302 || rubish.resStatusCode == 301) {
+                        res.statusCode = rubish.resStatusCode
+                        res.end()
+                    } else {
+                        let template = objToStr(createTemplate[mes](result))
+                        if (mes == 'success' && isObject(result)) {
+                            res.setHeader('Content-Type', 'application/json')
+                            res.end(template)
+                        }
+                        if (mes != 'success') {
+                            res.setHeader('Content-Type', 'text/html')
+                            res.end(template)
+                        }
+                        if (mes == 'success' && isString(result)) {
+                            res.setHeader('Content-Type', 'text/html')
+                            res.end(result)
+                        }
+                        if (!isString(result) && !isObject(result)) {
+                            res.setHeader('Content-Type', 'text/html')
+                            res.end(objToStr(createTemplate['formatWarning'](result)))
+                        }
                     }
-                    if (mes != 'success') {
-                        res.setHeader('Content-Type', 'text/html')
-                        res.end(template)
-                    }
-                    if (mes == 'success' && isString(result)) {
-                        res.setHeader('Content-Type', 'text/html')
-                        res.end(result)
-                    }
-                    if (!isString(result) && !isObject(result)) {
-                        res.setHeader('Content-Type', 'text/html')
-                        res.end(objToStr(createTemplate['formatWarning'](result)))
-                    }
-                }
+                } catch (e) {}
             })
     } else {
         let url = hinge.url

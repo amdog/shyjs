@@ -1,4 +1,6 @@
 const { log } = require('../../lib/log.js')
+const { isFileInstatic, isObject } = require('../../lib/kit.js')
+const path = require('path')
 
 function toCallController(controller, hinge) {
     let config = global.config
@@ -46,10 +48,17 @@ function toCallController(controller, hinge) {
 
 function afterContoller(shy, hinge, data) {
     return new Promise(res => {
-        if (shy.Controller.afterContoller) {
-            shy.Controller.afterContoller(data, hinge, (r) => {
-                res(r)
-            })
+        if (shy.render) {
+            let url = new URL('http://localhost' + hinge.url).pathname
+            let filePath
+            if (global.config.static) {
+                filePath = isFileInstatic(url, global.config.static)
+            }
+            if (filePath && isObject(data) && shy.render) {
+                res(shy.render(path.join(module.parent.parent.parent.parent.path, filePath), data).toString())
+            } else {
+                res(data)
+            }
         } else {
             res(data)
         }

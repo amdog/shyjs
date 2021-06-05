@@ -15,6 +15,9 @@ entry.Route = route
 entry.Plug = Plug
 entry.deploy = deploy
 entry.Controller = {}
+entry.render = (filePath, d) => {
+    return d
+}
 global.shy = entry
 
 module.exports = entry
